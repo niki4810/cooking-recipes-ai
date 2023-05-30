@@ -61,7 +61,29 @@ export default function Home() {
           setResult(data);
         });
       } else {
-        // TODO
+        const resp = await fetch("/api/recipe", {
+          method: "POST",
+          body: JSON.stringify({
+            prompt: prompt,
+          }),
+        });
+        const { data } = await resp.json();
+
+        if (data.title) {
+          const imageResponse = await fetch("/api/recipe-image", {
+            method: "POST",
+            body: JSON.stringify({
+              prompt: data.title,
+            }),
+          });
+          const { image } = await imageResponse.json();
+          setLoading(false);
+          const newData = { ...data, image };
+          setResult(newData);
+        } else {
+          setLoading(false);
+          setResult(data);
+        }
       }
     }
   }
@@ -69,12 +91,17 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-4 justify-center items-center w-100 h-full p-4 antialiased">
       <h1 className="text-2xl font-mono font-extrabold">AI Cooking Recipes</h1>
-      <form className="max-w-md mx-auto m-4" onSubmit={handleOnGenerate}>
+      <form className="w-full m-4" onSubmit={handleOnGenerate}>
         <div className="flex items-center border-b-2 border-teal-500 py-2">
-          <textarea defaultValue={initialPrompt} className="flex-grow appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none" rows={2} placeholder="Search for a recipe..." aria-label="Search for a recipe"  name="prompt"></textarea>
-          <button
-            className="flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded"
-          >
+          <textarea
+            defaultValue={initialPrompt}
+            className="flex-grow appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none"
+            rows={2}
+            placeholder="Search for a recipe..."
+            aria-label="Search for a recipe"
+            name="prompt"
+          ></textarea>
+          <button className="flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded">
             Search
           </button>
         </div>
@@ -88,7 +115,7 @@ export default function Home() {
                 setMockMode((prev) => !prev);
               }}
             />
-            <span className="ml-2 text-gray-700">Mock response</span>
+            <span className="ml-2 text-gray-700 text-xs">Mock OpenAI response</span>
           </label>
         </div>
       </form>

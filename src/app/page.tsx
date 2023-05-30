@@ -1,113 +1,142 @@
-import Image from 'next/image'
+"use client";
+
+import { useState } from "react";
+
+const initialPrompt = `Chocolate Cake Recipe`;
+const mockResponseWithImage = {
+  title: "Chocolate Cake Recipe",
+  ingredients: [
+    "1) All-purpose flour (200g)",
+    "2) Cocoa powder (50g)",
+    "3) Granulated sugar (200g)",
+    "4) Baking powder (2 teaspoons)",
+    "5) Salt (1/2 teaspoon)",
+    "6) Milk (1 cup)",
+    "7) Vegetable oil (1/2 cup)",
+    "8) Eggs (2)",
+    "9) Vanilla extract (2 teaspoons)",
+    "10) Hot water (1/2 cup)",
+    "11) Butter (for greasing the pan)",
+    "12) Powdered sugar (for dusting on the cake)",
+  ],
+  instructions: [
+    "1) Preheat the oven to 350°F/180°C",
+    "2) Grease a 9-inch cake pan with butter",
+    "3) In a mixing bowl, whisk together flour, cocoa powder, granulated sugar, baking powder, and salt until well combined",
+    "4) Add milk, vegetable oil, eggs, and vanilla extract into the same bowl and mix thoroughly",
+    "5) Gradually add hot water to the mixture and continue to whisk until it is smooth",
+    "6) Pour the batter into the greased cake pan and bake for 30 to 35 minutes or until a toothpick inserted in the center comes out clean",
+    "7) Remove the cake from the oven and let it cool completely before dusting it with powdered sugar",
+    "8) Slice and serve the cake once it is completely cooled",
+  ],
+  preperationTime: "10 minutes",
+  cookingTime: "35 minutes",
+  noOfServings: 6,
+  image: "cake.png",
+};
 
 export default function Home() {
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [mockMode, setMockMode] = useState(true);
+  async function handleOnGenerate(ev) {
+    ev.preventDefault();
+    const promptEl = Array.from(ev.target.elements).find(
+      (el) => el.name === "prompt"
+    );
+    if (promptEl) {
+      const prompt = promptEl.value;
+      setResult("");
+      setLoading(true);
+      if (mockMode) {
+        const promise = new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(mockResponseWithImage);
+          }, 500);
+        });
+
+        promise.then((data) => {
+          setLoading(false);
+          console.log(data);
+          setResult(data);
+        });
+      } else {
+        // TODO
+      }
+    }
+  }
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="flex flex-col gap-4 justify-center items-center w-100 h-full p-4 antialiased">
+      <h1 className="text-2xl font-mono font-extrabold">AI Cooking Recipes</h1>
+      <form className="max-w-md mx-auto m-4" onSubmit={handleOnGenerate}>
+        <div className="flex items-center border-b-2 border-teal-500 py-2">
+          <textarea defaultValue={initialPrompt} className="flex-grow appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none" rows={2} placeholder="Search for a recipe..." aria-label="Search for a recipe"  name="prompt"></textarea>
+          <button
+            className="flex-shrink-0 bg-teal-500 hover:bg-teal-700 border-teal-500 hover:border-teal-700 text-sm border-4 text-white py-1 px-2 rounded"
           >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+            Search
+          </button>
         </div>
+        <div className="mt-2">
+          <label className="inline-flex items-center">
+            <input
+              type="checkbox"
+              className="form-checkbox h-5 w-5 text-teal-600"
+              checked={mockMode}
+              onChange={() => {
+                setMockMode((prev) => !prev);
+              }}
+            />
+            <span className="ml-2 text-gray-700">Mock response</span>
+          </label>
+        </div>
+      </form>
+
+      {loading && <div>Loading...</div>}
+      <div>
+        {result && (
+          <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl m-4">
+            <div className="md:flex">
+              <div className="md:flex-shrink-0">
+                <img
+                  className="h-48 w-full object-cover md:w-48"
+                  src={result.image}
+                  alt={result.title}
+                />
+              </div>
+              <div className="p-8">
+                <div className="block text-lg leading-tight font-medium text-black hover:underline pb-4">
+                  {result.title}
+                </div>
+                <div className="uppercase tracking-wide text-sm text-indigo-500 font-semibold">
+                  Preparation time:{" "}
+                  <span id="prep-time">{result.preperationTime}</span>
+                </div>
+                <div className="uppercase tracking-wide text-sm text-indigo-500 font-semibold">
+                  Cooking time: <span id="cook-time">{result.cookingTime}</span>
+                </div>
+                <div className="uppercase tracking-wide text-sm text-indigo-500 font-semibold">
+                  No. of servings:{" "}
+                  <span id="servings">{result.noOfServings}</span>
+                </div>
+                <p className="mt-2 text-gray-500">Ingredients:</p>
+                <ul id="ingredients" className="list-inside">
+                  {result.ingredients.map((ingredient) => {
+                    return <li key={ingredient}>{ingredient}</li>;
+                  })}
+                </ul>
+                <p className="mt-2 text-gray-500">Instructions:</p>
+                <ol id="instructions" className="list-inside">
+                  {result.instructions.map((instruction) => {
+                    return <li key={instruction}>{instruction}</li>;
+                  })}
+                </ol>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore the Next.js 13 playground.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+    </div>
+  );
 }
